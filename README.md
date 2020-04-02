@@ -84,7 +84,7 @@ The most important advantage of PyTorch over NumPy is its automatic differentiat
 Say you have a composite function which is a chain of two functions: g(u(x)).
 To compute the derivative of g with respect to x we can use the chain rule which states that: dg/dx = dg/du * du/dx. PyTorch can analytically compute the derivatives for us.
 
-To compute the derivatives in PyTorch first we create a tensor and set its requires_grad to true. We can use tensor operations to define our functions. We assume g is a quadratic function and g is a simple linear function:
+To compute the derivatives in PyTorch first we create a tensor and set its requires_grad to true. We can use tensor operations to define our functions. We assume u is a quadratic function and g is a simple linear function:
 ```python
 x = torch.tensor(1.0, requires_grad=True)
 
