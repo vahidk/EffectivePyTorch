@@ -220,7 +220,7 @@ print(net.a, net.b) # Should be close to 5 and 3
 <a name="torchscript"></a>
 PyTorch is optimized to perform operations on large tensors. Doing many operations on small tensors are quite inefficient in PyTorch. So, whenever possible you should rewrite your computations in batch form to reduce overhead and improve performance. If there's no way you can manually batch your operations, using TorchScript may improve your codes performance. TorchScript is simply a subset of Python functions that are recognized by PyTorch. PyTorch can automatically batch some operations for you using its just in time (jit) compiler.
 
-Let's look at an example. A very common operation in ML applications is "batch gather". This operation can simply written is output[i] = input[index[i]]. This can be simply implemented in PyTorch as follows:
+Let's look at an example. A very common operation in ML applications is "batch gather". This operation can simply written is output[i] = input[i, index[i]]. This can be simply implemented in PyTorch as follows:
 ```python
 import torch
 def batch_gather(tensor, indices):
