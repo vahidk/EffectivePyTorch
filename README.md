@@ -3,11 +3,11 @@
 Table of Contents
 =================
 ## Part I: PyTorch Fundamentals
-1.  [PyTorch Basics](#basics)
+1.  [PyTorch basics](#basics)
 2.  [Encapsulate your model with Modules](#modules)
 3.  [Broadcasting the good and the ugly](#broadcast)
 4.  [Take advantage of the overloaded operators](#overloaded_ops)
-5.  [Optimizing Runtime with TorchScript](#torchscript)
+5.  [Optimizing runtime with TorchScript](#torchscript)
 6.  [Numerical stability in PyTorch](#stable)
 ---
 
@@ -21,7 +21,7 @@ _We aim to gradually expand this series by adding new articles and keep the cont
 # Part I: PyTorch Fundamentals
 <a name="fundamentals"></a>
 
-## PyTorch Basics
+## PyTorch basics
 <a name="basics"></a>
 PyTorch is one of the most popular libraries for numerical computation and currently is amongst the most widely used libraries for performing machine learning research. In many ways PyTorch is similar to NumPy, with the additional benefit that PyTorch allows you to perform your computations on CPUs, GPUs, and TPUs without any material change to your code. PyTorch also makes it easy to distribute your computation across multiple devices or machines. One of the most important features of PyTorch is automatic differentiation. It allows computing the gradients of your functions analytically in an efficient manner which is crucial for training machine learning models using gradient descent method. Our goal here is to provide a gentle introduction to PyTorch and discuss best practices for using PyTorch.
 
@@ -67,7 +67,7 @@ Similarly, to add two vectors, you can do:
 z = x + y
 ```
 
-To convert a tensor into a numpy array you can call numpy() method:
+To convert a tensor into a numpy array you can call Tensor's numpy() method:
 ```python
 print(z.numpy())
 ```
@@ -216,9 +216,9 @@ for i in range(10000):
 print(net.a, net.b) # Should be close to 5 and 3
 ```
 
-## Optimizing Runtime with TorchScript
+## Optimizing runtime with TorchScript
 <a name="torchscript"></a>
-PyTorch is optimized to perform operations on large tensors. Doing many operations on small tensors are quite inefficient in PyTorch. So, whenever possible you should rewrite your computations in batch form to reduce overhead and improve performance. If there's no way you can manually batch your operations, using TorchScript may improve your codes performance. TorchScript is simply a subset of Python functions that are recognized by PyTorch. PyTorch can automatically batch some operations for you using its just in time (jit) compiler.
+PyTorch is optimized to perform operations on large tensors. Doing many operations on small tensors are quite inefficient in PyTorch. So, whenever possible you should rewrite your computations in batch form to reduce overhead and improve performance. If there's no way you can manually batch your operations, using TorchScript may improve your code's performance. TorchScript is simply a subset of Python functions that are recognized by PyTorch. PyTorch can automatically batch some operations for you using its just in time (jit) compiler.
 
 Let's look at an example. A very common operation in ML applications is "batch gather". This operation can simply written is output[i] = input[i, index[i]]. This can be simply implemented in PyTorch as follows:
 ```python
