@@ -164,7 +164,7 @@ This is just tip of the iceberg for what PyTorch can do. Many problems such as o
 
 ## Encapsulate your model with Modules
 <a name="modules"></a>
-In the previous example we used bare bone tensors and tensor oeprations to build our model. To make your code slightly more organized it's recommended to use PyTorch's modules. A module is simply a container for your parameters and encapsulates model operations. For example say you want to represent a linear model y = ax + b. This model can represented with the following code:
+In the previous example we used bare bone tensors and tensor oeprations to build our model. To make your code slightly more organized it's recommended to use PyTorch's modules. A module is simply a container for your parameters and encapsulates model operations. For example say you want to represent a linear model y = ax + b. This model can be represented with the following code:
 
 ```python
 import torch
@@ -218,9 +218,9 @@ print(net.a, net.b) # Should be close to 5 and 3
 
 ## Optimizing runtime with TorchScript
 <a name="torchscript"></a>
-PyTorch is optimized to perform operations on large tensors. Doing many operations on small tensors are quite inefficient in PyTorch. So, whenever possible you should rewrite your computations in batch form to reduce overhead and improve performance. If there's no way you can manually batch your operations, using TorchScript may improve your code's performance. TorchScript is simply a subset of Python functions that are recognized by PyTorch. PyTorch can automatically batch some operations for you using its just in time (jit) compiler.
+PyTorch is optimized to perform operations on large tensors. Doing many operations on small tensors is quite inefficient in PyTorch. So, whenever possible you should rewrite your computations in batch form to reduce overhead and improve performance. If there's no way you can manually batch your operations, using TorchScript may improve your code's performance. TorchScript is simply a subset of Python functions that are recognized by PyTorch. PyTorch can automatically optimize your TorchScript code using its just in time (jit) compiler and reduce some overheads.
 
-Let's look at an example. A very common operation in ML applications is "batch gather". This operation can simply written is output[i] = input[i, index[i]]. This can be simply implemented in PyTorch as follows:
+Let's look at an example. A very common operation in ML applications is "batch gather". This operation can simply written as output[i] = input[i, index[i]]. This can be simply implemented in PyTorch as follows:
 ```python
 import torch
 def batch_gather(tensor, indices):
