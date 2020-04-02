@@ -216,6 +216,39 @@ for i in range(10000):
 print(net.a, net.b) # Should be close to 5 and 3
 ```
 
+PyTorch comes with a number of predefined modules. One such module is torch.nn.Linear which is a more general form of a linear function than what we defined above. We can rewrite our module above using torch.nn.Linear like this:
+
+```python
+class Net(torch.nn.Module):
+
+  def __init__(self):
+    super().__init__()
+    self.linear = torch.nn.Linear(1, 1)
+
+  def forward(self, x):
+    yhat = self.linear(x.unsqueeze(1)).squeeze(1)
+    return yhat
+```
+
+Note that we used squeeze and unsqueeze since torch.nn.Linear operates on batch of vectors as opposed to scalars.
+
+By default calling paramters() on a module will return the paramters of all its submodules:
+```python
+net = Net()
+for p in net.parameters():
+    print(p)
+```
+
+There are some predefined modules that act as a container for other modules. The most commonly used container module is torch.nn.Sequential. As its name implies it's used to to stack multiple modules (or layers) on top of each other. For example to stack two Linear layers with a ReLU nonlinearity in between you can do:
+
+```python
+model = torch.nn.Sequential(
+    torch.nn.Linear(64, 32),
+    torch.nn.ReLU(),
+    torch.nn.Linear(32, 10),
+)
+```
+
 ## Optimizing runtime with TorchScript
 <a name="torchscript"></a>
 PyTorch is optimized to perform operations on large tensors. Doing many operations on small tensors is quite inefficient in PyTorch. So, whenever possible you should rewrite your computations in batch form to reduce overhead and improve performance. If there's no way you can manually batch your operations, using TorchScript may improve your code's performance. TorchScript is simply a subset of Python functions that are recognized by PyTorch. PyTorch can automatically optimize your TorchScript code using its just in time (jit) compiler and reduce some overheads.
