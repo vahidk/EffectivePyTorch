@@ -263,7 +263,7 @@ import torch
 
 a = torch.tensor([[1., 2.], [3., 4.]])
 b = torch.tensor([[1.], [2.]])
-# c = a + torch.tile(b, [1, 2])
+# c = a + b.repeat([1, 2])
 c = a + b
 
 print(c)
