@@ -164,7 +164,7 @@ This is just tip of the iceberg for what PyTorch can do. Many problems such as o
 
 ## Encapsulate your model with Modules
 <a name="modules"></a>
-In the previous example we used bare bone tensors and tensor oeprations to build our model. To make your code slightly more organized it's recommended to use PyTorch's modules. A module is simply a container for your parameters and encapsulates model operations. For example say you want to represent a linear model y = ax + b. This model can be represented with the following code:
+In the previous example we used bare bone tensors and tensor operations to build our model. To make your code slightly more organized it's recommended to use PyTorch's modules. A module is simply a container for your parameters and encapsulates model operations. For example say you want to represent a linear model y = ax + b. This model can be represented with the following code:
 
 ```python
 import torch
@@ -232,7 +232,7 @@ class Net(torch.nn.Module):
 
 Note that we used squeeze and unsqueeze since torch.nn.Linear operates on batch of vectors as opposed to scalars.
 
-By default calling paramters() on a module will return the paramters of all its submodules:
+By default calling parameters() on a module will return the parameters of all its submodules:
 ```python
 net = Net()
 for p in net.parameters():
