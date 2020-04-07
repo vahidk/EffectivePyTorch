@@ -249,44 +249,6 @@ model = torch.nn.Sequential(
 )
 ```
 
-## Optimizing runtime with TorchScript
-<a name="torchscript"></a>
-PyTorch is optimized to perform operations on large tensors. Doing many operations on small tensors is quite inefficient in PyTorch. So, whenever possible you should rewrite your computations in batch form to reduce overhead and improve performance. If there's no way you can manually batch your operations, using TorchScript may improve your code's performance. TorchScript is simply a subset of Python functions that are recognized by PyTorch. PyTorch can automatically optimize your TorchScript code using its just in time (jit) compiler and reduce some overheads.
-
-Let's look at an example. A very common operation in ML applications is "batch gather". This operation can simply written as output[i] = input[i, index[i]]. This can be simply implemented in PyTorch as follows:
-```python
-import torch
-def batch_gather(tensor, indices):
-    output = []
-    for i in range(tensor.size(0)):
-        output += [tensor[i][indices[i]]]
-    return torch.stack(output)
-```
-
-To implement the same function using TorchScript simply use the torch.jit.script decorator:
-```python
-@torch.jit.script
-def batch_gather_jit(tensor, indices):
-    output = []
-    for i in range(tensor.size(0)):
-        output += [tensor[i][indices[i]]]
-    return torch.stack(output)
-```
-On my tests this is about 10% faster.
-
-But nothing beats manually batching your operations. A vectorized implementation in my tests is 100 times faster:
-```python
-def batch_gather_vec(tensor, indices):
-    shape = list(tensor.shape)
-    flat_first = torch.reshape(
-        tensor, [shape[0] * shape[1]] + shape[2:])
-    offset = torch.reshape(
-        torch.arange(shape[0]).cuda() * shape[1],
-        [shape[0]] + [1] * (len(indices.shape) - 1))
-    output = flat_first[indices + offset]
-    return output
-```
-
 ## Broadcasting the good and the ugly
 <a name="broadcast"></a>
 PyTorch supports broadcasting elementwise operations. Normally when you want to perform operations like addition and multiplication, you need to make sure that shapes of the operands match, e.g. you can’t add a tensor of shape [3, 2] to a tensor of shape [3, 4]. But there’s a special case and that’s when you have a singular dimension. PyTorch implicitly tiles the tensor across its singular dimensions to match the shape of the other operand. So it’s valid to add a tensor of shape [3, 2] to a tensor of shape [3, 1]
@@ -441,6 +403,44 @@ You can also use the augmented version of these ops. For example `x += y` and `x
 
 Note that Python doesn't allow overloading "and", "or", and "not" keywords.
 
+
+## Optimizing runtime with TorchScript
+<a name="torchscript"></a>
+PyTorch is optimized to perform operations on large tensors. Doing many operations on small tensors is quite inefficient in PyTorch. So, whenever possible you should rewrite your computations in batch form to reduce overhead and improve performance. If there's no way you can manually batch your operations, using TorchScript may improve your code's performance. TorchScript is simply a subset of Python functions that are recognized by PyTorch. PyTorch can automatically optimize your TorchScript code using its just in time (jit) compiler and reduce some overheads.
+
+Let's look at an example. A very common operation in ML applications is "batch gather". This operation can simply written as output[i] = input[i, index[i]]. This can be simply implemented in PyTorch as follows:
+```python
+import torch
+def batch_gather(tensor, indices):
+    output = []
+    for i in range(tensor.size(0)):
+        output += [tensor[i][indices[i]]]
+    return torch.stack(output)
+```
+
+To implement the same function using TorchScript simply use the torch.jit.script decorator:
+```python
+@torch.jit.script
+def batch_gather_jit(tensor, indices):
+    output = []
+    for i in range(tensor.size(0)):
+        output += [tensor[i][indices[i]]]
+    return torch.stack(output)
+```
+On my tests this is about 10% faster.
+
+But nothing beats manually batching your operations. A vectorized implementation in my tests is 100 times faster:
+```python
+def batch_gather_vec(tensor, indices):
+    shape = list(tensor.shape)
+    flat_first = torch.reshape(
+        tensor, [shape[0] * shape[1]] + shape[2:])
+    offset = torch.reshape(
+        torch.arange(shape[0]).cuda() * shape[1],
+        [shape[0]] + [1] * (len(indices.shape) - 1))
+    output = flat_first[indices + offset]
+    return output
+```
 
 ## Numerical stability in PyTorch
 <a name="stable"></a>
