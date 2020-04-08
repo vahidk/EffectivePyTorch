@@ -82,10 +82,10 @@ x = torch.tensor(np.random.normal([3, 5]))
 
 The most important advantage of PyTorch over NumPy is its automatic differentiation functionality which is very useful in optimization applications such as optimizing parameters of a neural network. Let's try to understand it with an example.
 
-Say you have a composite function which is a chain of two functions: g(u(x)).
-To compute the derivative of g with respect to x we can use the chain rule which states that: dg/dx = dg/du * du/dx. PyTorch can analytically compute the derivatives for us.
+Say you have a composite function which is a chain of two functions: `g(u(x))`.
+To compute the derivative of `g` with respect to `x` we can use the chain rule which states that: `dg/dx = dg/du * du/dx`. PyTorch can analytically compute the derivatives for us.
 
-To compute the derivatives in PyTorch first we create a tensor and set its requires_grad to true. We can use tensor operations to define our functions. We assume u is a quadratic function and g is a simple linear function:
+To compute the derivatives in PyTorch first we create a tensor and set its `requires_grad` to true. We can use tensor operations to define our functions. We assume `u` is a quadratic function and `g` is a simple linear function:
 ```python
 x = torch.tensor(1.0, requires_grad=True)
 
@@ -96,7 +96,7 @@ def g(u):
   return -u
 ```
 
-In this case our composite function is g(u(x)) = -x*x. So its derivative with respect to x is -2x. At point x=1, this is equal to -2.
+In this case our composite function is `g(u(x)) = -x*x`. So its derivative with respect to `x` is `-2x`. At point `x=1`, this is equal to `-2`.
 
 Let's verify this. This can be done using grad function in PyTorch:
 ```python
@@ -106,7 +106,7 @@ print(dgdx)  # tensor(-2.)
 
 ### Curve fitting
 
-To understand how powerful automatic differentiation can be let's have a look at another example. Assume that we have samples from a curve (say f(x) = 5x^2 + 3) and we want to estimate f(x) based on these samples. We define a parametric function g(x, w) = w0 x^2 + w1 x + w2, which is a function of the input x and latent parameters w, our goal is then to find the latent parameters such that g(x, w) ≈ f(x). This can be done by minimizing the following loss function: L(w) = &sum; (f(x) - g(x, w))^2. Although there's a closed form solution for this simple problem, we opt to use a more general approach that can be applied to any arbitrary differentiable function, and that is using stochastic gradient descent. We simply compute the average gradient of L(w) with respect to w over a set of sample points and move in the opposite direction.
+To understand how powerful automatic differentiation can be let's have a look at another example. Assume that we have samples from a curve (say `f(x) = 5x^2 + 3`) and we want to estimate `f(x)` based on these samples. We define a parametric function `g(x, w) = w0 x^2 + w1 x + w2`, which is a function of the input `x` and latent parameters `w`, our goal is then to find the latent parameters such that `g(x, w) ≈ f(x)`. This can be done by minimizing the following loss function: `L(w) = Σ (f(x) - g(x, w))^2`. Although there's a closed form solution for this simple problem, we opt to use a more general approach that can be applied to any arbitrary differentiable function, and that is using stochastic gradient descent. We simply compute the average gradient of `L(w)` with respect to `w` over a set of sample points and move in the opposite direction.
 
 Here's how it can be done in PyTorch:
 
@@ -165,7 +165,7 @@ This is just tip of the iceberg for what PyTorch can do. Many problems such as o
 
 ## Encapsulate your model with Modules
 <a name="modules"></a>
-In the previous example we used bare bone tensors and tensor operations to build our model. To make your code slightly more organized it's recommended to use PyTorch's modules. A module is simply a container for your parameters and encapsulates model operations. For example say you want to represent a linear model y = ax + b. This model can be represented with the following code:
+In the previous example we used bare bone tensors and tensor operations to build our model. To make your code slightly more organized it's recommended to use PyTorch's modules. A module is simply a container for your parameters and encapsulates model operations. For example say you want to represent a linear model `y = ax + b`. This model can be represented with the following code:
 
 ```python
 import torch
@@ -190,13 +190,13 @@ net = Net()
 y = net(x)
 ```
 
-Parameters are essentially tensors with requires_grad set to true. It's convenient to use parameters because you can simply retrieve them all with module's parameters() method:
+Parameters are essentially tensors with `requires_grad` set to true. It's convenient to use parameters because you can simply retrieve them all with module's `parameters()` method:
 ```python
 for p in net.parameters():
     print(p)
 ```
 
-Now, say you have an unknown function y = 5x^2 + 3 + some noise, and you want to optimize the parameters of your model to fit this function.  You can start by sampling some points from your function:
+Now, say you have an unknown function `y = 5x + 3 + some noise`, and you want to optimize the parameters of your model to fit this function.  You can start by sampling some points from your function:
 ```python
 x = torch.arange(100, dtype=torch.float32) / 100
 y = 5 * x + 3 + torch.rand(100) * 0.3
@@ -217,7 +217,7 @@ for i in range(10000):
 print(net.a, net.b) # Should be close to 5 and 3
 ```
 
-PyTorch comes with a number of predefined modules. One such module is torch.nn.Linear which is a more general form of a linear function than what we defined above. We can rewrite our module above using torch.nn.Linear like this:
+PyTorch comes with a number of predefined modules. One such module is `torch.nn.Linear` which is a more general form of a linear function than what we defined above. We can rewrite our module above using `torch.nn.Linear` like this:
 
 ```python
 class Net(torch.nn.Module):
@@ -231,7 +231,7 @@ class Net(torch.nn.Module):
     return yhat
 ```
 
-Note that we used squeeze and unsqueeze since torch.nn.Linear operates on batch of vectors as opposed to scalars.
+Note that we used squeeze and unsqueeze since `torch.nn.Linear` operates on batch of vectors as opposed to scalars.
 
 By default calling parameters() on a module will return the parameters of all its submodules:
 ```python
@@ -240,7 +240,7 @@ for p in net.parameters():
     print(p)
 ```
 
-There are some predefined modules that act as a container for other modules. The most commonly used container module is torch.nn.Sequential. As its name implies it's used to to stack multiple modules (or layers) on top of each other. For example to stack two Linear layers with a ReLU nonlinearity in between you can do:
+There are some predefined modules that act as a container for other modules. The most commonly used container module is `torch.nn.Sequential`. As its name implies it's used to to stack multiple modules (or layers) on top of each other. For example to stack two Linear layers with a `ReLU` nonlinearity in between you can do:
 
 ```python
 model = torch.nn.Sequential(
@@ -252,7 +252,7 @@ model = torch.nn.Sequential(
 
 ## Broadcasting the good and the ugly
 <a name="broadcast"></a>
-PyTorch supports broadcasting elementwise operations. Normally when you want to perform operations like addition and multiplication, you need to make sure that shapes of the operands match, e.g. you can’t add a tensor of shape [3, 2] to a tensor of shape [3, 4]. But there’s a special case and that’s when you have a singular dimension. PyTorch implicitly tiles the tensor across its singular dimensions to match the shape of the other operand. So it’s valid to add a tensor of shape [3, 2] to a tensor of shape [3, 1]
+PyTorch supports broadcasting elementwise operations. Normally when you want to perform operations like addition and multiplication, you need to make sure that shapes of the operands match, e.g. you can’t add a tensor of shape `[3, 2]` to a tensor of shape `[3, 4]`. But there’s a special case and that’s when you have a singular dimension. PyTorch implicitly tiles the tensor across its singular dimensions to match the shape of the other operand. So it’s valid to add a tensor of shape `[3, 2]` to a tensor of shape `[3, 1]`.
 
 ```python
 import torch
@@ -281,7 +281,7 @@ d = torch.nn.functional.relu(linear(c))
 print(d.shape)  # torch.Size([5, 3, 10])
 ```
 
-But this can be done more efficiently with broadcasting. We use the fact that f(m(x + y)) is equal to f(mx + my). So we can do the linear operations separately and use broadcasting to do implicit concatenation:
+But this can be done more efficiently with broadcasting. We use the fact that `f(m(x + y))` is equal to `f(mx + my)`. So we can do the linear operations separately and use broadcasting to do implicit concatenation:
 
 ```python
 a = torch.rand([5, 3, 5])
@@ -326,7 +326,7 @@ c = torch.sum(a + b)
 print(c)
 ```
 
-What do you think the value of c would be after evaluation? If you guessed 6, that’s wrong. It’s going to be 12. This is because when rank of two tensors don’t match, PyTorch automatically expands the first dimension of the tensor with lower rank before the elementwise operation, so the result of addition would be [[2, 3], [3, 4]], and the reducing over all parameters would give us 12.
+What do you think the value of `c` would be after evaluation? If you guessed 6, that’s wrong. It’s going to be 12. This is because when rank of two tensors don’t match, PyTorch automatically expands the first dimension of the tensor with lower rank before the elementwise operation, so the result of addition would be `[[2, 3], [3, 4]]`, and the reducing over all parameters would give us 12.
 
 The way to avoid this problem is to be as explicit as possible. Had we specified which dimension we would want to reduce across, catching this bug would have been much easier:
 
@@ -338,7 +338,7 @@ c = torch.sum(a + b, 0)
 print(c)
 ```
 
-Here the value of c would be [5, 7], and we immediately would guess based on the shape of the result that there’s something wrong. A general rule of thumb is to always specify the dimensions in reduction operations and when using torch.squeeze.
+Here the value of `c` would be `[5, 7]`, and we immediately would guess based on the shape of the result that there’s something wrong. A general rule of thumb is to always specify the dimensions in reduction operations and when using `torch.squeeze`.
 
 ## Take advantage of the overloaded operators
 <a name="overloaded_ops"></a>
@@ -362,7 +362,7 @@ for i in range(500):
     z += x[i]
 print("Took %f seconds." % (time.time() - start))
 ```
-This runs quite slow and the reason is that we are calling the slice op 500 times, which adds a lot of overhead. A better choice would have been to use torch.unbind op to slice the matrix into a list of vectors all at once:
+This runs quite slow and the reason is that we are calling the slice op 500 times, which adds a lot of overhead. A better choice would have been to use `torch.unbind` op to slice the matrix into a list of vectors all at once:
 ```python
 z = torch.zeros([10])
 for x_i in torch.unbind(x):
@@ -370,7 +370,7 @@ for x_i in torch.unbind(x):
 ```
 This is significantly (~30% on my machine) faster. 
 
-Of course, the right way to do this simple reduction is to use torch.sum op to this in one op:
+Of course, the right way to do this simple reduction is to use `torch.sum` op to this in one op:
 ```python
 z = torch.sum(x, dim=0)
 ```
@@ -402,14 +402,14 @@ z = x != y  # z = torch.ne(x, y)
 
 You can also use the augmented version of these ops. For example `x += y` and `x **= 2` are also valid.
 
-Note that Python doesn't allow overloading "and", "or", and "not" keywords.
+Note that Python doesn't allow overloading `and`, `or`, and `not` keywords.
 
 
 ## Optimizing runtime with TorchScript
 <a name="torchscript"></a>
 PyTorch is optimized to perform operations on large tensors. Doing many operations on small tensors is quite inefficient in PyTorch. So, whenever possible you should rewrite your computations in batch form to reduce overhead and improve performance. If there's no way you can manually batch your operations, using TorchScript may improve your code's performance. TorchScript is simply a subset of Python functions that are recognized by PyTorch. PyTorch can automatically optimize your TorchScript code using its just in time (jit) compiler and reduce some overheads.
 
-Let's look at an example. A very common operation in ML applications is "batch gather". This operation can simply written as output[i] = input[i, index[i]]. This can be simply implemented in PyTorch as follows:
+Let's look at an example. A very common operation in ML applications is "batch gather". This operation can simply written as `output[i] = input[i, index[i]]`. This can be simply implemented in PyTorch as follows:
 ```python
 import torch
 def batch_gather(tensor, indices):
@@ -419,7 +419,7 @@ def batch_gather(tensor, indices):
     return torch.stack(output)
 ```
 
-To implement the same function using TorchScript simply use the torch.jit.script decorator:
+To implement the same function using TorchScript simply use the `torch.jit.script` decorator:
 ```python
 @torch.jit.script
 def batch_gather_jit(tensor, indices):
@@ -446,9 +446,9 @@ def batch_gather_vec(tensor, indices):
 ## Building efficient custom data loaders
 <a name="dataloader"></a>
 
-In the last lesson we talked about writing efficient PyTorch code. But to make your code run with maximum efficiency you also need to load your data efficiently into your device's memory. Fortunately PyTorch offers a tool to make data loading easy. It's called a _DataLoader_. A _DataLoader_ uses multiple workers to simultanously load data from a _Dataset_ and optionally uses a _Sampler_ to sample data entries and form a batch.
+In the last lesson we talked about writing efficient PyTorch code. But to make your code run with maximum efficiency you also need to load your data efficiently into your device's memory. Fortunately PyTorch offers a tool to make data loading easy. It's called a `DataLoader`. A `DataLoader` uses multiple workers to simultanously load data from a `Dataset` and optionally uses a `Sampler` to sample data entries and form a batch.
 
-If you can randomly access your data, using a _DataLoader_ is very easy: You simply need to implement a _Dataset_ class that implements _\_\_getitem\_\__ (to read each data item) and _\_\_len\_\__ (to return the number of items in the dataset) methods. For example here's how to load images from a given directory:
+If you can randomly access your data, using a `DataLoader` is very easy: You simply need to implement a `Dataset` class that implements `__getitem__` (to read each data item) and `__len__` (to return the number of items in the dataset) methods. For example here's how to load images from a given directory:
 
 ```python
 import glob
@@ -478,9 +478,9 @@ for data in dataloader:
 
 Here we are using 8 workers to simultanously read our data from the disk. You can tune the number of workers on your machine for optimal results.
 
-Using a _DataLoader_ to read data with random access may be ok if you have fast storage or if your data items are large. But imagine having a network file system with slow connection. Requesting individual files this way can be extremely slow and would probably end up becoming the bottleneck of your training pipeline.
+Using a `DataLoader` to read data with random access may be ok if you have fast storage or if your data items are large. But imagine having a network file system with slow connection. Requesting individual files this way can be extremely slow and would probably end up becoming the bottleneck of your training pipeline.
 
-A better approach is to store your data in a contiguous file format which can be read sequentially. For example if you have a large collection of images you can use tar to create a single archive and extract files from the archive sequentially in python. To do this you can use PyTorch's _IterableDataset_. To create an _IterableDataset_ class you only need to implement an _\_\_iter\_\__ method which sequentially reads and yields data items from the dataset.
+A better approach is to store your data in a contiguous file format which can be read sequentially. For example if you have a large collection of images you can use tar to create a single archive and extract files from the archive sequentially in python. To do this you can use PyTorch's `IterableDataset`. To create an `IterableDataset` class you only need to implement an `__iter__` method which sequentially reads and yields data items from the dataset.
 
 A naive implementation would like this:
 
@@ -515,7 +515,7 @@ for data in dataloader:
     # data contains duplicated items
 ```
 
-The problem is that each worker creates a separate instance of the dataset and each would start from the beginning of the dataset. One way to avoid this is to instead of having one tar file, split your data into num_workers separate tar files and load each with a separate worker:
+The problem is that each worker creates a separate instance of the dataset and each would start from the beginning of the dataset. One way to avoid this is to instead of having one tar file, split your data into `num_workers` separate tar files and load each with a separate worker:
 
 ```python
 class TarImageDataset(torch.utils.data.IterableDataset):
@@ -545,7 +545,7 @@ We discussed a simple strategy to avoid duplicated entries problem. [tfrecord](h
 <a name="stable"></a>
 When using any numerical computation library such as NumPy or PyTorch, it's important to note that writing mathematically correct code doesn't necessarily lead to correct results. You also need to make sure that the computations are stable.
 
-Let's start with a simple example. From primary school we know that x * y / y is equal to x for any non zero value of x. But let's see if that's always true in practice:
+Let's start with a simple example. Mathematically, it's easy to see that `x * y / y = x` for any non zero value of `x`. But let's see if that's always true in practice:
 ```python
 import numpy as np
 
@@ -557,7 +557,7 @@ z = x * y / y
 print(z)  # prints nan
 ```
 
-The reason for the incorrect result is that y is simply too small for float32 type. A similar problem occurs when y is too large:
+The reason for the incorrect result is that `y` is simply too small for float32 type. A similar problem occurs when `y` is too large:
 
 ```python
 y = np.float32(1e39)  # y would be stored as inf
@@ -585,9 +585,9 @@ def unstable_softmax(logits):
 
 print(unstable_softmax(torch.tensor([1000., 0.])).numpy())  # prints [ nan, 0.]
 ```
-Note that computing the exponential of logits for relatively small numbers results to gigantic results that are out of float32 range. The largest valid logit for our naive softmax implementation is ln(3.40282e+38) = 88.7, anything beyond that leads to a nan outcome.
+Note that computing the exponential of logits for relatively small numbers results to gigantic results that are out of float32 range. The largest valid logit for our naive softmax implementation is `ln(3.40282e+38) = 88.7`, anything beyond that leads to a nan outcome.
 
-But how can we make this more stable? The solution is rather simple. It's easy to see that exp(x - c) / &sum; exp(x - c) = exp(x) / &sum; exp(x). Therefore we can subtract any constant from the logits and the result would remain the same. We choose this constant to be the maximum of logits. This way the domain of the exponential function would be limited to [-inf, 0], and consequently its range would be [0.0, 1.0] which is desirable:
+But how can we make this more stable? The solution is rather simple. It's easy to see that `exp(x - c) Σ exp(x - c) = exp(x) / Σ exp(x)`. Therefore we can subtract any constant from the logits and the result would remain the same. We choose this constant to be the maximum of logits. This way the domain of the exponential function would be limited to `[-inf, 0]`, and consequently its range would be `[0.0, 1.0]` which is desirable:
 
 ```python
 import torch
@@ -599,7 +599,7 @@ def softmax(logits):
 print(softmax(torch.tensor([1000., 0.])).numpy())  # prints [ 1., 0.]
 ```
 
-Let's look at a more complicated case. Consider we have a classification problem. We use the softmax function to produce probabilities from our logits. We then define our loss function to be the cross entropy between our predictions and the labels. Recall that cross entropy for a categorical distribution can be simply defined as xe(p, q) = -&sum; p_i log(q_i). So a naive implementation of the cross entropy would look like this:
+Let's look at a more complicated case. Consider we have a classification problem. We use the softmax function to produce probabilities from our logits. We then define our loss function to be the cross entropy between our predictions and the labels. Recall that cross entropy for a categorical distribution can be simply defined as `xe(p, q) = -Σ p_i log(q_i)`. So a naive implementation of the cross entropy would look like this:
 
 ```python
 def unstable_softmax_cross_entropy(labels, logits):
@@ -637,6 +637,5 @@ xe = softmax_cross_entropy(labels, logits)
 g = torch.autograd.grad(xe, logits)[0]
 print(g.numpy())  # prints [0.5, -0.5]
 ```
-which is correct.
 
 Let me remind again that extra care must be taken when doing gradient descent to make sure that the range of your functions as well as the gradients for each layer are within a valid range. Exponential and logarithmic functions when used naively are especially problematic because they can map small numbers to enormous ones and the other way around.
