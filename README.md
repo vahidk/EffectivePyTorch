@@ -504,7 +504,7 @@ class TarImageDataset(torch.utils.data.IterableDataset):
         self.path = path
 
     def __iter__(self):
-        yield from tar_image_iterator(self.path) 
+        yield from tar_image_iterator(self.path)
 ```
 
 But there's a major problem with this implementation. If you try to use DataLoader to read from this dataset with more than one worker you'd observe a lot of duplicated images:
@@ -515,7 +515,7 @@ for data in dataloader:
     # data contains duplicated items
 ```
 
-The problem is that each worker creates a separate instance of the dataset and each would start from the beginning of the dataset. One way to avoid this is to instead of having one tar file split your data into num_workers separate tar files and loading each with a separate worker:
+The problem is that each worker creates a separate instance of the dataset and each would start from the beginning of the dataset. One way to avoid this is to instead of having one tar file, split your data into num_workers separate tar files and load each with a separate worker:
 
 ```python
 class TarImageDataset(torch.utils.data.IterableDataset):
@@ -531,15 +531,15 @@ class TarImageDataset(torch.utils.data.IterableDataset):
         yield from tar_image_iterator(self.paths[worker_info.worker_id])
 ```
 
-And this is how it can be used:
+This is how our dataset class can be used:
 ```python
 dataloader = torch.utils.data.DataLoader(
-    TarImageDataset(["/data/imagenet_part1.tar", "/data/imagenet_part2.tar"), num_workers=2)
+    TarImageDataset(["/data/imagenet_part1.tar", "/data/imagenet_part2.tar"]), num_workers=2)
 for data in dataloader:
     # do something with data
 ```
 
-This is a simple strategy to avoid duplicated entries problem. [tfrecord](https://github.com/vahidk/tfrecord) package uses slightly more sophisticated strategies to shard your data on the fly.
+We discussed a simple strategy to avoid duplicated entries problem. [tfrecord](https://github.com/vahidk/tfrecord) package uses slightly more sophisticated strategies to shard your data on the fly.
 
 ## Numerical stability in PyTorch
 <a name="stable"></a>
