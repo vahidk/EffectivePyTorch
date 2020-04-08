@@ -8,7 +8,8 @@ Table of Contents
 3.  [Broadcasting the good and the ugly](#broadcast)
 4.  [Take advantage of the overloaded operators](#overloaded_ops)
 5.  [Optimizing runtime with TorchScript](#torchscript)
-6.  [Numerical stability in PyTorch](#stable)
+6.  [Building efficient custom data loaders](#dataloader)
+7.  [Numerical stability in PyTorch](#stable)
 ---
 
 _To install PyTorch follow the [instructions on the official website](https://pytorch.org/):_
@@ -442,6 +443,104 @@ def batch_gather_vec(tensor, indices):
     return output
 ```
 
+## Building efficient custom data loaders
+<a name="dataloader"></a>
+
+In the last lesson we talked about writing efficient PyTorch code. But to make your code run with maximum efficiency you also need to load your data efficiently into your device's memory. Fortunately PyTorch offers a tool to make data loading easy. It's called a _DataLoader_. A _DataLoader_ uses multiple workers to simultanously load data from a _Dataset_ and optionally uses a _Sampler_ to sample data entries and form a batch.
+
+If you can randomly access your data, using a _DataLoader_ is very easy: You simply need to implement a _Dataset_ class that implements _\_\_getitem\_\__ (to read each data item) and _\_\_len\_\__ (to return the number of items in the dataset) methods. For example here's how to load images from a given directory:
+
+```python
+import glob
+import os
+import random
+import cv2
+import torch
+
+class ImageDirectoryDataset(torch.utils.data.Dataset):
+    def __init__(path, pattern):
+        self.paths = list(glob.glob(os.path.join(path, pattern)))
+
+    def __len__(self):
+        return len(self.paths)
+
+    def __item__(self):
+        path = random.choice(paths)
+        return cv2.imread(path, 1)
+```
+
+To load all jpeg images from a given directory you can then do the following:
+```python
+dataloader = torch.utils.data.DataLoader(ImageDirectoryDataset("/data/imagenet/*.jpg"), num_workers=8)
+for data in dataloader:
+    # do something with data
+```
+
+Here we are using 8 workers to simultanously read our data from the disk. You can tune the number of workers on your machine for optimal results.
+
+Using a _DataLoader_ to read data with random access may be ok if you have fast storage or if your data items are large. But imagine having a network file system with slow connection. Requesting individual files this way can be extremely slow and would probably end up becoming the bottleneck of your training pipeline.
+
+A better approach is to store your data in a contiguous file format which can be read sequentially. For example if you have a large collection of images you can use tar to create a single archive and extract files from the archive sequentially in python. To do this you can use PyTorch's _IterableDataset_. To create an _IterableDataset_ class you only need to implement an _\_\_iter\_\__ method which sequentially reads and yields data items from the dataset.
+
+A naive implementation would like this:
+
+```python
+import tarfile
+import torch
+
+def tar_image_iterator(path):
+    tar = tarfile.open(self.path, "r")
+    for tar_info in tar:
+        file = tar.extractfile(tar_info)
+        content = file.read()
+        yield cv2.imdecode(content, 1)
+        file.close()
+        tar.members = []
+    tar.close()
+
+class TarImageDataset(torch.utils.data.IterableDataset):
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+
+    def __iter__(self):
+        yield from tar_image_iterator(self.path) 
+```
+
+But there's a major problem with this implementation. If you try to use DataLoader to read from this dataset with more than one worker you'd observe a lot of duplicated images:
+
+```python
+dataloader = torch.utils.data.DataLoader(TarImageDataset("/data/imagenet.tar"), num_workers=8)
+for data in dataloader:
+    # data contains duplicated items
+```
+
+The problem is that each worker creates a separate instance of the dataset and each would start from the beginning of the dataset. One way to avoid this is to instead of having one tar file split your data into num_workers separate tar files and loading each with a separate worker:
+
+```python
+class TarImageDataset(torch.utils.data.IterableDataset):
+    def __init__(self, paths):
+        super().__init__()
+        self.paths = paths
+
+    def __iter__(self):
+        worker_info = torch.utils.data.get_worker_info()
+        # For simplicity we assume num_workers is equal to number of tar files
+        if worker_info is None or worker_info.num_workers != len(self.paths):
+            raise ValueError("Number of workers doesn't match number of files.")
+        yield from tar_image_iterator(self.paths[worker_info.worker_id])
+```
+
+And this is how it can be used:
+```python
+dataloader = torch.utils.data.DataLoader(
+    TarImageDataset(["/data/imagenet_part1.tar", "/data/imagenet_part2.tar"), num_workers=2)
+for data in dataloader:
+    # do something with data
+```
+
+This is a simple strategy to avoid duplicated entries problem. [tfrecord](https://github.com/vahidk/tfrecord) package uses slightly more sophisticated strategies to shard your data on the fly.
+
 ## Numerical stability in PyTorch
 <a name="stable"></a>
 When using any numerical computation library such as NumPy or PyTorch, it's important to note that writing mathematically correct code doesn't necessarily lead to correct results. You also need to make sure that the computations are stable.
@@ -541,4 +640,3 @@ print(g.numpy())  # prints [0.5, -0.5]
 which is correct.
 
 Let me remind again that extra care must be taken when doing gradient descent to make sure that the range of your functions as well as the gradients for each layer are within a valid range. Exponential and logarithmic functions when used naively are especially problematic because they can map small numbers to enormous ones and the other way around.
-
