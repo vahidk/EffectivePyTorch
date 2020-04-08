@@ -165,7 +165,7 @@ This is just tip of the iceberg for what PyTorch can do. Many problems such as o
 
 ## Encapsulate your model with Modules
 <a name="modules"></a>
-In the previous example we used bare bone tensors and tensor operations to build our model. To make your code slightly more organized it's recommended to use PyTorch's modules. A module is simply a container for your parameters and encapsulates model operations. For example say you want to represent a linear model y = ax + b. This model can be represented with the following code:
+In the previous example we used bare bone tensors and tensor operations to build our model. To make your code slightly more organized it's recommended to use PyTorch's modules. A module is simply a container for your parameters and encapsulates model operations. For example say you want to represent a linear model `y = ax + b`. This model can be represented with the following code:
 
 ```python
 import torch
@@ -190,7 +190,7 @@ net = Net()
 y = net(x)
 ```
 
-Parameters are essentially tensors with requires_grad set to true. It's convenient to use parameters because you can simply retrieve them all with module's parameters() method:
+Parameters are essentially tensors with requires_grad set to true. It's convenient to use parameters because you can simply retrieve them all with module's `parameters()` method:
 ```python
 for p in net.parameters():
     print(p)
@@ -199,7 +199,7 @@ for p in net.parameters():
 Now, say you have an unknown function y = 5x^2 + 3 + some noise, and you want to optimize the parameters of your model to fit this function.  You can start by sampling some points from your function:
 ```python
 x = torch.arange(100, dtype=torch.float32) / 100
-y = 5 * x + 3 + torch.rand(100) * 0.3
+y = 5 * x * x + 3 + torch.rand(100) * 0.3
 ```
 
 Similar to the previous example, you can define a loss function and optimize the parameters of your model as follows:
@@ -233,14 +233,14 @@ class Net(torch.nn.Module):
 
 Note that we used squeeze and unsqueeze since torch.nn.Linear operates on batch of vectors as opposed to scalars.
 
-By default calling parameters() on a module will return the parameters of all its submodules:
+By default calling `parameters()` on a module will return the parameters of all its submodules:
 ```python
 net = Net()
 for p in net.parameters():
     print(p)
 ```
 
-There are some predefined modules that act as a container for other modules. The most commonly used container module is torch.nn.Sequential. As its name implies it's used to to stack multiple modules (or layers) on top of each other. For example to stack two Linear layers with a ReLU nonlinearity in between you can do:
+There are some predefined modules that act as a container for other modules. The most commonly used container module is `torch.nn.Sequential`. As its name implies it's used to to stack multiple modules (or layers) on top of each other. For example to stack two Linear layers with a ReLU nonlinearity in between you can do:
 
 ```python
 model = torch.nn.Sequential(
@@ -472,6 +472,7 @@ class ImageDirectoryDataset(torch.utils.data.Dataset):
 To load all jpeg images from a given directory you can then do the following:
 ```python
 dataloader = torch.utils.data.DataLoader(ImageDirectoryDataset("/data/imagenet/*.jpg"), num_workers=8)
+
 for data in dataloader:
     # do something with data
 ```
@@ -515,7 +516,7 @@ for data in dataloader:
     # data contains duplicated items
 ```
 
-The problem is that each worker creates a separate instance of the dataset and each would start from the beginning of the dataset. One way to avoid this is to instead of having one tar file, split your data into num_workers separate tar files and load each with a separate worker:
+The problem is that each worker creates a separate instance of the dataset and each would start from the beginning of the dataset. One way to avoid this is to instead of having one tar file, split your data into `num_workers` separate tar files and load each with a separate worker:
 
 ```python
 class TarImageDataset(torch.utils.data.IterableDataset):
