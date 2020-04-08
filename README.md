@@ -599,7 +599,7 @@ def softmax(logits):
 print(softmax(torch.tensor([1000., 0.])).numpy())  # prints [ 1., 0.]
 ```
 
-Let's look at a more complicated case. Consider we have a classification problem. We use the softmax function to produce probabilities from our logits. We then define our loss function to be the cross entropy between our predictions and the labels. Recall that cross entropy for a categorical distribution can be simply defined as `xe(p, q) = Σ p_i log(q_i)`. So a naive implementation of the cross entropy would look like this:
+Let's look at a more complicated case. Consider we have a classification problem. We use the softmax function to produce probabilities from our logits. We then define our loss function to be the cross entropy between our predictions and the labels. Recall that cross entropy for a categorical distribution can be simply defined as `xe(p, q) = -Σ p_i log(q_i)`. So a naive implementation of the cross entropy would look like this:
 
 ```python
 def unstable_softmax_cross_entropy(labels, logits):
