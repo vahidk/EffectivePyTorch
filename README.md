@@ -695,7 +695,7 @@ with torch.cuda.amp.autocast():
 
 This maybe all you need if you have a relatively stable optimization problem and if you use a relatively low learning rate. Adding this one line of extra code can reduce your training up to half on modern hardware.
 
-## GradScalar
+### GradScalar
 
 As we mentioned in the beginning of this section, 16-bit precision may not always be enough for some computations. One particular case of interest is representing gradient values, a great portion of which are usually small values. Representing them with 16-bit floats often leads to buffer underflows (i.e. they&#39;d be represented as zeros). This makes training neural networks very unstable. `GradScalar` is designed to resolve this issue. It takes as input your loss value and multiplies it by a large scalar, inflating gradient values, and therefore making them represnetable in 16-bit precision. It then scales them down during gradient update to ensure parameters are updated correctly. This is generally what `GradScalar` does. But under the hood `GradScalar` is a bit smarter than that. Inflating the gradients may actually result in overflows which is equally bad. So `GradScalar` actually monitors the gradient values and if it detects overflows it skips updates, scaling down the scalar factor according to a configurable schedule. (The default schedule usually works but you may need to adjust that for your use case.)
 
@@ -716,7 +716,7 @@ Note that we first create an instance of `GradScalar`. In training loop we call 
 
 The following is a sample code that show cases mixed precision training on a synthetic problem of learning to generate a checkerboard from image coordinates. You can paste it on a [Google Colab](https://colab.research.google.com/), set the backend to GPU and compare the single and mixed-precision performance. Note that this is a small toy example, in practice with larger networks you may see larger boosts in performance using mixed precision.
 
-## An Example
+### An Example
 
 ### Generating a checker board
 
@@ -815,5 +815,5 @@ plt.subplot(1,2,2); plt.imshow(targets.squeeze().cpu().float()); plt.show()
 ```
 
 
-## Reference
+### Reference
 - https://docs.nvidia.com/deeplearning/performance/mixed-precision-training/index.html
