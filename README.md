@@ -27,7 +27,7 @@ _We aim to gradually expand this series by adding new articles and keep the cont
 <a name="basics"></a>
 PyTorch is one of the most popular libraries for numerical computation and currently is amongst the most widely used libraries for performing machine learning research. In many ways PyTorch is similar to NumPy, with the additional benefit that PyTorch allows you to perform your computations on CPUs, GPUs, and TPUs without any material change to your code. PyTorch also makes it easy to distribute your computation across multiple devices or machines. One of the most important features of PyTorch is automatic differentiation. It allows computing the gradients of your functions analytically in an efficient manner which is crucial for training machine learning models using gradient descent method. Our goal here is to provide a gentle introduction to PyTorch and discuss best practices for using PyTorch.
 
-The first thing to learn about PyTorch is the concept of Tensors. Tensors are simply multidimensional arrays. A PyTorch Tensor is very similar to a NumPy array with some ~~magical~~ additional functionality. 
+The first thing to learn about PyTorch is the concept of Tensors. Tensors are simply multidimensional arrays. A PyTorch Tensor is very similar to a NumPy array with some ~~magical~~ additional functionality.
 
 A tensor can store a scalar value:
 ```python
@@ -131,7 +131,7 @@ def model(x):
 
 def compute_loss(y, yhat):
     # The loss is defined to be the mean squared error distance between our
-    # estimate of y and its true value. 
+    # estimate of y and its true value.
     loss = torch.nn.functional.mse_loss(yhat, y)
     return loss
 
@@ -347,7 +347,7 @@ Just like NumPy, PyTorch overloads a number of python operators to make PyTorch 
 
 The slicing op is one of the overloaded operators that can make indexing tensors very easy:
 ```python
-z = x[begin:end]  # z = torch.narrow(0, begin, end-begin)
+z = x[begin:end]  # z = torch.narrow(x, 0, begin, end-begin)
 ```
 Be very careful when using this op though. The slicing op, like any other op, has some overhead. Because it's a common op and innocent looking it may get overused a lot which may lead to inefficiencies. To understand how inefficient this op can be let's look at an example. We want to manually perform reduction across the rows of a matrix:
 ```python
@@ -369,7 +369,7 @@ z = torch.zeros([10])
 for x_i in torch.unbind(x):
     z += x_i
 ```
-This is significantly (~30% on my machine) faster. 
+This is significantly (~30% on my machine) faster.
 
 Of course, the right way to do this simple reduction is to use `torch.sum` op to this in one op:
 ```python
@@ -379,24 +379,24 @@ which is extremely fast (~100x faster on my machine).
 
 PyTorch also overloads a range of arithmetic and logical operators:
 ```python
-z = -x  # z = torch.neg(x)
-z = x + y  # z = torch.add(x, y)
-z = x - y
-z = x * y  # z = torch.mul(x, y)
-z = x / y  # z = torch.div(x, y)
-z = x // y
-z = x % y
+z = -x      # z = torch.neg(x)
+z = x + y   # z = torch.add(x, y)
+z = x - y   # z = torch.sub(x, y)
+z = x * y   # z = torch.mul(x, y)
+z = x / y   # z = torch.div(x, y)
+z = x // y  # z = torch.floor_divide(x, y)
+z = x % y   # z = torch.remainder(x, y)
 z = x ** y  # z = torch.pow(x, y)
-z = x @ y  # z = torch.matmul(x, y)
-z = x > y
-z = x >= y
-z = x < y
-z = x <= y
+z = x @ y   # z = torch.matmul(x, y)
+z = x > y   # z = torch.gt(x, y)
+z = x >= y  # z = torch.ge(x, y)
+z = x < y   # z = torch.lt(x, y)
+z = x <= y  # z = torch.le(x, y)
 z = abs(x)  # z = torch.abs(x)
-z = x & y
-z = x | y
-z = x ^ y  # z = torch.logical_xor(x, y)
-z = ~x  # z = torch.logical_not(x)
+z = x & y   # z = torch.bitwise_and(x, y)
+z = x | y   # z = torch.bitwise_or(x, y)
+z = x ^ y   # z = torch.bitwise_xor(x, y)
+z = ~x      # z = torch.bitwise_not(x)
 z = x == y  # z = torch.eq(x, y)
 z = x != y  # z = torch.ne(x, y)
 ```
@@ -465,7 +465,7 @@ class ImageDirectoryDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.paths)
 
-    def __item__(self):
+    def __getitem__(self):
         path = random.choice(paths)
         return cv2.imread(path, 1)
 ```
@@ -594,7 +594,7 @@ But how can we make this more stable? The solution is rather simple. It's easy t
 import torch
 
 def softmax(logits):
-    exp = torch.exp(logits - torch.reduce_max(logits))
+    exp = torch.exp(logits - torch.max(logits))
     return exp / torch.sum(exp)
 
 print(softmax(torch.tensor([1000., 0.])).numpy())  # prints [ 1., 0.]
@@ -658,7 +658,7 @@ import torch
 x = torch.rand([32, 32]).cuda()
 y = torch.rand([32, 32]).cuda()
 
-with torch.cuda.amp.autocast():
+with torch.amp.autocast("cuda"):
   a = x + y
   b = x @ y
 print(a.dtype)  # prints torch.float32
@@ -673,7 +673,7 @@ import torch
 x = torch.rand([32, 32]).cuda()
 y = torch.rand([32, 32]).cuda().half()
 
-with torch.cuda.amp.autocast():
+with torch.amp.autocast("cuda"):
   a = x + y
   b = x @ y
 print(a.dtype)  # prints torch.float32
@@ -688,7 +688,7 @@ In practice, you can trust `autocast` to do the right casting to improve runtime
 model = ...
 loss_fn = ...
 
-with torch.cuda.amp.autocast():
+with torch.amp.autocast("cuda"):
   outputs = model(inputs)
   loss = loss_fn(outputs, targets)
 ```
@@ -697,12 +697,12 @@ This maybe all you need if you have a relatively stable optimization problem and
 
 ### GradScalar
 
-As we mentioned in the beginning of this section, 16-bit precision may not always be enough for some computations. One particular case of interest is representing gradient values, a great portion of which are usually small values. Representing them with 16-bit floats often leads to buffer underflows (i.e. they&#39;d be represented as zeros). This makes training neural networks very unstable. `GradScalar` is designed to resolve this issue. It takes as input your loss value and multiplies it by a large scalar, inflating gradient values, and therefore making them represnetable in 16-bit precision. It then scales them down during gradient update to ensure parameters are updated correctly. This is generally what `GradScalar` does. But under the hood `GradScalar` is a bit smarter than that. Inflating the gradients may actually result in overflows which is equally bad. So `GradScalar` actually monitors the gradient values and if it detects overflows it skips updates, scaling down the scalar factor according to a configurable schedule. (The default schedule usually works but you may need to adjust that for your use case.)
+As we mentioned in the beginning of this section, 16-bit precision may not always be enough for some computations. One particular case of interest is representing gradient values, a great portion of which are usually small values. Representing them with 16-bit floats often leads to buffer underflows (i.e. they&#39;d be represented as zeros). This makes training neural networks very unstable. `GradScalar` is designed to resolve this issue. It takes as input your loss value and multiplies it by a large scalar, inflating gradient values, and therefore making them representable in 16-bit precision. It then scales them down during gradient update to ensure parameters are updated correctly. This is generally what `GradScalar` does. But under the hood `GradScalar` is a bit smarter than that. Inflating the gradients may actually result in overflows which is equally bad. So `GradScalar` actually monitors the gradient values and if it detects overflows it skips updates, scaling down the scalar factor according to a configurable schedule. (The default schedule usually works but you may need to adjust that for your use case.)
 
 Using `GradScalar` is very easy in practice:
 
 ```python
-scaler = torch.cuda.amp.GradScaler()
+scaler = torch.amp.GradScaler()
 
 loss = ...
 optimizer = ...  # an instance torch.optim.Optimizer
@@ -794,13 +794,13 @@ net = Net().cuda()
 loss_fn = torch.nn.MSELoss()
 opt = torch.optim.Adam(net.parameters(), 0.001)
 
-scaler = torch.cuda.amp.GradScaler()
+scaler = torch.amp.GradScaler()
 
 start_time = time.time()
 
 for i in range(500):
   opt.zero_grad()
-  with torch.cuda.amp.autocast():
+  with torch.amp.autocast("cuda"):
     outputs = net(inputs)
     loss = loss_fn(outputs, targets)
   scaler.scale(loss).backward()
